@@ -3,11 +3,16 @@ const router = express.Router();
 
 const { Gardener, Plot, Vegetable } = require('./../models.js');
 
+const gardenersPage = require('../views/gardenersPage.js');
+const singleGardenerPage = require('../views/singleGardenerPage.js');
+
 router.get('/', (req, res, next) => {
   Gardener.findAll()
     .then(gardeners => {
-      const gardenerData = gardeners.map(gardener => gardener.get());
-      res.json(gardenerData);
+      const gardenersData = gardeners.map(gardener => gardener.get());
+      res.send(gardenersPage(gardenersData));
+      // console.log('gardener html', usersPage(gardenersData));
+      // res.send('hi');
     })
     .catch(next);
 });
@@ -17,12 +22,24 @@ router.get('/:id', (req, res, next) => {
     where: {
       id: req.params.id,
     },
+    include: {
+      model: Plot,
+    },
   })
     .then(gardener => {
       if (!gardener) {
         return res.send('user not found');
       }
-      res.json(gardener.get());
+      return gardener;
+    })
+    .then(gardenerAndPlot => {
+      return Promise.all([
+        gardenerAndPlot,
+        gardenerAndPlot.plot.getVegetables(),
+      ]);
+    })
+    .then(([gardenerAndPlot, veggies]) => {
+      res.send(singleGardenerPage(gardenerAndPlot, veggies));
     })
     .catch(next);
 });
