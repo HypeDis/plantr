@@ -1,6 +1,10 @@
 const { db, Gardener, Vegetable, Plot } = require('./models.js');
 
-const insertVegetable = (name, color = null, planted_on = Date.now()) => {
+const insertVegetable = (
+  name = null,
+  color = null,
+  planted_on = Date.now()
+) => {
   return Vegetable.create({
     name,
     color,
